@@ -1,0 +1,50 @@
+# Deployment for MongoDB Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:3.6.5-jessie
+        # to store the mongodb data to persistant storage
+        # name and path where the mongodb stores the data in container
+        volumeMounts:
+        - name: mongo-persistant-storage
+          mountPath: /data/db
+    
+    # declares the volume name and path where the mongodb data will get stores
+    # It could be host drives or cloud persistant volume services
+      volumes:
+      - name: mongo-persistant-storage
+        hostPath:
+          path: /mnt/some/directory/structure/
+          type: DirectoryOrCreate
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-mongodb
+
+spec:
+  selector:
+    app: mongodb
+  ports:
+  - name: mongoport
+    port: 27017
+  type: ClusterIP
